@@ -8,11 +8,15 @@ message ClientConnect {
   string version = 2;
 }
 
-message ServerConnect {
+message ServerHeader {
   string version = 1;
-  string prefix = 2;
-  string public_url = 3;
-  int64 expire = 4;
+  bool private = 2;
+}
+
+message ServerConnect {
+  string prefix = 1;
+  string public_url = 2;
+  int64 expire = 3;
 }
 
 message Error {
@@ -63,11 +67,12 @@ message HttpResponse {
 
 message Transfer {
   oneof Command {
-    ClientConnect client_connect = 1;
-    ServerConnect server_connect = 2;
-    HttpRequest http_request = 3;
-    HttpResponse http_response = 4;
-    BodyChunk body_chunk = 5;
-    Error error = 6;
+    ServerHeader server_header = 1;
+    ClientConnect client_connect = 2;
+    ServerConnect server_connect = 3;
+    HttpRequest http_request = 4;
+    HttpResponse http_response = 5;
+    BodyChunk body_chunk = 6;
+    Error error = 7;
   }
 }

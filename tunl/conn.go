@@ -159,6 +159,10 @@ func (t *TunlConn) Write(data []byte) (n int, err error) {
 func (t *TunlConn) Send(m proto.Message) (n int, err error) {
 	trans := &commands.Transfer{}
 	switch m.(type) {
+	case *commands.ServerHeader:
+		trans.Command = &commands.Transfer_ServerHeader{
+			ServerHeader: m.(*commands.ServerHeader),
+		}
 	case *commands.ServerConnect:
 		trans.Command = &commands.Transfer_ServerConnect{
 			ServerConnect: m.(*commands.ServerConnect),
