@@ -3,16 +3,21 @@ package proto;
 
 option go_package = "./commands";
 
-message Connect {
-  string prefix = 1;
-  string public_url = 2;
-  int64 expire = 3;
+message ClientConnect {
+  string password = 1;
+  string version = 2;
 }
 
-message ServerFull {
+message ServerConnect {
+  string version = 1;
+  string prefix = 2;
+  string public_url = 3;
+  int64 expire = 4;
 }
 
-message SessionExpired {
+message Error {
+  int32 code = 1;
+  string message = 2;
 }
 
 message Header {
@@ -58,11 +63,11 @@ message HttpResponse {
 
 message Transfer {
   oneof Command {
-    Connect connect = 1;
-    HttpRequest http_request = 2;
-    HttpResponse http_response = 3;
-    SessionExpired session_expired = 4;
-    ServerFull server_full = 5;
-    BodyChunk body_chunk = 6;
+    ClientConnect client_connect = 1;
+    ServerConnect server_connect = 2;
+    HttpRequest http_request = 3;
+    HttpResponse http_response = 4;
+    BodyChunk body_chunk = 5;
+    Error error = 6;
   }
 }

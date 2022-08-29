@@ -13,6 +13,16 @@ import (
 
 const prefixSize = 4
 
+const ReaderSize = 1 << 20
+
+const (
+	ErrorServerFull int32 = iota
+	ErrorUnauthorized
+	ErrorSessionExpired
+	ErrorClientResponse
+	ErrorServerRequest
+)
+
 var ErrorConnectionClosed = errors.New("connection closed")
 
 type CommandCallback func(cmd *commands.Transfer)
@@ -70,7 +80,10 @@ func (t *TunlConn) handleDisconnected() {
 func (t *TunlConn) HandleExpire() {
 	for {
 		if time.Now().Unix() >= t.ExpireAt.Unix() {
-			t.Send(&commands.SessionExpired{})
+			t.Send(&commands.Error{
+				Code:    ErrorSessionExpired,
+				Message: "session expired",
+			})
 			time.Sleep(time.Second)
 			t.Close()
 			break
@@ -146,9 +159,13 @@ func (t *TunlConn) Write(data []byte) (n int, err error) {
 func (t *TunlConn) Send(m proto.Message) (n int, err error) {
 	trans := &commands.Transfer{}
 	switch m.(type) {
-	case *commands.Connect:
-		trans.Command = &commands.Transfer_Connect{
-			Connect: m.(*commands.Connect),
+	case *commands.ServerConnect:
+		trans.Command = &commands.Transfer_ServerConnect{
+			ServerConnect: m.(*commands.ServerConnect),
+		}
+	case *commands.ClientConnect:
+		trans.Command = &commands.Transfer_ClientConnect{
+			ClientConnect: m.(*commands.ClientConnect),
 		}
 	case *commands.HttpRequest:
 		trans.Command = &commands.Transfer_HttpRequest{
@@ -162,13 +179,9 @@ func (t *TunlConn) Send(m proto.Message) (n int, err error) {
 		trans.Command = &commands.Transfer_BodyChunk{
 			BodyChunk: m.(*commands.BodyChunk),
 		}
-	case *commands.SessionExpired:
-		trans.Command = &commands.Transfer_SessionExpired{
-			SessionExpired: m.(*commands.SessionExpired),
-		}
-	case *commands.ServerFull:
-		trans.Command = &commands.Transfer_ServerFull{
-			ServerFull: m.(*commands.ServerFull),
+	case *commands.Error:
+		trans.Command = &commands.Transfer_Error{
+			Error: m.(*commands.Error),
 		}
 	}
 
