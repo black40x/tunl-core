@@ -63,12 +63,29 @@ func (x *HttpRequest) CheckBasicAuth(login, pass string) bool {
 	return false
 }
 
+func (x *HttpRequest) GetContentType() string {
+	return x.GetHeaderValue("Content-Type")
+}
+
 func (x *HttpRequest) IsJson() bool {
 	return x.GetHeaderValue("Content-Type") == "application/json"
 }
 
+func (x *HttpRequest) IsTextPlain() bool {
+	return x.GetHeaderValue("Content-Type") == "text/plain"
+}
+
+func (x *HttpRequest) IsXML() bool {
+	return x.GetHeaderValue("Content-Type") == "application/xml"
+}
+
+func (x *HttpRequest) IsFormUrlencoded() bool {
+	return x.GetHeaderValue("Content-Type") == "application/x-www-form-urlencoded"
+}
+
 func (x *HttpRequest) IsFormData() (boundary string, ok bool) {
 	const formDataPrefix = "multipart/form-data"
+
 	header := x.GetHeaderValue("Content-Type")
 	contType, boundary, ok := strings.Cut(header, ";")
 	if ok && strings.ToLower(contType) == formDataPrefix {

@@ -55,6 +55,7 @@ message HttpRequest {
   repeated Cookie cookies = 6;
   repeated Header header = 7;
   string remote_addr = 8;
+  int64 error_code = 9;
 }
 
 message HttpResponse {

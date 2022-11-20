@@ -16,7 +16,7 @@ const prefixSize = 4
 const ReaderSize = 1 << 20
 
 const (
-	ErrorServerFull int32 = iota
+	ErrorServerFull int32 = 2000 + iota
 	ErrorUnauthorized
 	ErrorSessionExpired
 	ErrorClientResponse
@@ -38,12 +38,14 @@ type TunlConn struct {
 	ExpireAt       time.Time
 	ConnectedAt    time.Time
 	mu             sync.Mutex
+	IsClosed       bool
 }
 
 func NewTunlConn(conn net.Conn) *TunlConn {
 	return &TunlConn{
 		Conn:        conn,
 		ConnectedAt: time.Now(),
+		IsClosed:    false,
 	}
 }
 
@@ -97,7 +99,7 @@ func (t *TunlConn) HandleConnection() {
 	for {
 		trans := &commands.Transfer{}
 		data, err := t.Read()
-		if err != nil {
+		if err != nil || t.Conn == nil || t.IsClosed {
 			if err == io.EOF {
 				t.handleDisconnected()
 				break
@@ -204,6 +206,8 @@ func (t *TunlConn) SetExpireAt(e time.Time) {
 func (t *TunlConn) Close() error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
+
+	t.IsClosed = true
 
 	return t.Conn.Close()
 }
