@@ -64,6 +64,7 @@ message HttpResponse {
   int32 status = 3;
   int64 content_length = 4;
   repeated Header header = 5;
+  int64 error_code = 6;
 }
 
 message Transfer {
